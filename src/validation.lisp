@@ -27,12 +27,15 @@
 ;;; Currently around method is not supported.
 (define-method-combination validate()
 			   ((primary (validate) :required t))
-  (labels((rec(methods)
-	    (if(endp (cdr methods))
-	      `(call-method ,(car methods) nil)
-	      `(multiple-value-bind(o e),(rec (cdr methods))
-		 (values o (append e (nth-value 1 (call-method ,(car methods) nil))))))))
-    (rec primary)))
+  (if (null(cdr primary))
+    `(call-method ,(car primary) nil)
+    `(multiple-value-call (lambda(&rest results)
+			    (values (car results)
+				    (loop :for errors :in (cdr results) :by #'cddr
+					  :append errors)))
+       ,@(mapcar (lambda(method)
+		   `(call-method ,method nil))
+		 primary))))
 
 ;;;; VALIDATE
 (defgeneric validate(object &key target-slots test)
