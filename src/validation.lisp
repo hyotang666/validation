@@ -118,7 +118,7 @@
 	   *errors*)))
 
 (defmethod assert-form((key (eql :type)) args)
-  `(IF (TYPEP ,(local-var args),(value args))
+  `(IF (TYPEP ,(local-var args) ',(value args))
      ,(next-assertion args)
      (PUSH (CONS ',(slot-name args)
 		 (FORMAT NIL ,@(or (format-args args)
