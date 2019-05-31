@@ -110,7 +110,12 @@
 (defmethod assert-form((key (eql :require)) args)
   `(if (slot-boundp ,(object args) ',(slot-name args))
      ,(next-assertion args)
-     (push (cons ',(slot-name args) "is required") *errors*)))
+     (push (cons ',(slot-name args)
+		 ,(let((format-args(format-args args)))
+		    (if format-args
+		      `(format nil ,@(format-args args))
+		      "is required")))
+	   *errors*)))
 
 (defmethod assert-form((key (eql :type)) args)
   `(IF (TYPEP ,(local-var args),(value args))
