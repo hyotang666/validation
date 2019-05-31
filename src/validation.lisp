@@ -188,7 +188,6 @@ document := string
        ,@(when target-slots
 	   `((CHECK-TYPE ,targets LIST)
 	     (CHECK-TARGETS ,var ,targets)))
-       (CANONICALIZE-OBJECT ,var ,(and target-slots targets))
        ,@(loop :for assert :in assertions
 	       :collect (<slot-asserts> assert (and target-slots targets) var))
        ,@(when optional-clause
