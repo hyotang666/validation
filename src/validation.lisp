@@ -84,12 +84,9 @@
       #0#)))
 
 (defun parse-assertions(assertions)
-  (typecase (car assertions)
-    ((CONS (EQL :REQUIRE) (CONS (EQL T)NULL))
-     assertions)
-    ((CONS (EQL :REQUIRE) (CONS NULL NULL))
-     (cdr assertions))
-    (T assertions)))
+  (if(typep (car assertions)'(CONS (EQL :REQUIRE) *))
+    assertions
+    (cons '(:require nil) assertions)))
 
 (defstruct(args (:conc-name nil))
   "Intermediate object"
@@ -108,14 +105,19 @@
 (defgeneric assert-form(key args))
 
 (defmethod assert-form((key (eql :require)) args)
-  `(if (slot-boundp ,(object args) ',(slot-name args))
-     ,(next-assertion args)
-     (push (cons ',(slot-name args)
-		 ,(let((format-args(format-args args)))
-		    (if format-args
-		      `(format nil ,@(format-args args))
-		      "is required")))
-	   *errors*)))
+  (let((rest(next-assertion args)))
+    `(IF (SLOT-BOUNDP ,(object args) ',(slot-name args))
+	 ,(if rest
+	    `(LET((,(local-var args)(SLOT-VALUE ,(object args) ',(slot-name args))))
+	      ,rest)
+	    nil)
+	 ,(when(value args)
+	    `(PUSH (CONS ',(slot-name args)
+			 ,(let((format-args(format-args args)))
+			    (if format-args
+			      `(FORMAT NIL ,@(format-args args))
+			      "is required")))
+		   *errors*)))))
 
 (defmethod assert-form((key (eql :type)) args)
   `(IF (TYPEP ,(local-var args) ',(value args))
