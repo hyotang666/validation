@@ -144,6 +144,24 @@
 				     `("must satisfies ~S but ~S"',(value args),(local-var args)))))
 	     *ERRORS*)))
 
+(defmethod no-applicable-method ((gf (eql #'assert-form)) &rest args)
+  (destructuring-bind(key args)args
+    (declare(ignore args))
+    (let((keys(loop :for method :in (c2mop:generic-function-methods gf)
+		    :for specializer = (car (c2mop:method-specializers method))
+		    :if (typep specializer 'c2mop:eql-specializer)
+		    :collect (c2mop:eql-specializer-object specializer)
+		    :else
+		    :do (restart-bind((remove-method-before-abort
+					(lambda()(remove-method gf method)
+					  (invoke-restart(find-restart 'abort)))))
+			  (error "~S first argument must be specialized by eql-specializer, but ~S"
+				 (c2mop:generic-function-name gf)
+				 specializer)))))
+      (if(not(find key keys))
+	(error "Unknown key ~S, supported are ~S." key keys)
+	(call-next-method)))))
+
 (defun next-assertion(args)
   (let((rest-assertions(rest-assertions args)))
     (unless(endp rest-assertions)
