@@ -38,7 +38,7 @@
 		 primary))))
 
 ;;;; VALIDATE
-(defgeneric validate(object &key target-slots test)
+(defgeneric validate(object &key)
   (:method-combination validate))
 
 ;;;; UPDATE-INSTANCE
