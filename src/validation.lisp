@@ -124,8 +124,8 @@
      ,(next-assertion args)
      (PUSH (CONS ',(slot-name args)
 		 (FORMAT NIL ,@(or (format-args args)
-				   `("is not type-of ~S" ',(value args))))
-	    *ERRORS*))))
+				   `("is not type-of ~S" ',(value args)))))
+	    *ERRORS*)))
 
 (defmethod assert-form((key (eql :key))args)
   (let((v(gensym"CANONICALIZED"))
