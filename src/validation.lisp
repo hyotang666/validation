@@ -105,19 +105,21 @@
 (defgeneric assert-form(key args))
 
 (defmethod assert-form((key (eql :require)) args)
-  (let((rest(next-assertion args)))
-    `(IF (SLOT-BOUNDP ,(object args) ',(slot-name args))
-	 ,(if rest
-	    `(LET((,(local-var args)(SLOT-VALUE ,(object args) ',(slot-name args))))
-	      ,rest)
-	    nil)
-	 ,(when(value args)
-	    `(PUSH (CONS ',(slot-name args)
-			 ,(let((format-args(format-args args)))
-			    (if format-args
-			      `(FORMAT NIL ,@(format-args args))
-			      "is required")))
-		   *errors*)))))
+  (let((rest(next-assertion args))
+       (required?(value args)))
+    (when(or rest required?)
+      `(IF (SLOT-BOUNDP ,(object args) ',(slot-name args))
+	   ,(if rest
+	      `(LET((,(local-var args)(SLOT-VALUE ,(object args) ',(slot-name args))))
+		 ,rest)
+	      nil)
+	   ,(when required?
+	      `(PUSH (CONS ',(slot-name args)
+			   ,(let((format-args(format-args args)))
+			      (if format-args
+				`(FORMAT NIL ,@(format-args args))
+				"is required")))
+		     *errors*))))))
 
 (defmethod assert-form((key (eql :type)) args)
   `(IF (TYPEP ,(local-var args) ',(value args))
