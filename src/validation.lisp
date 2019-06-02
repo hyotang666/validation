@@ -93,6 +93,7 @@
   object slot-name local-var value format-args rest-assertions)
 
 (defmethod update-instance((args args)&rest params)
+  (setf args (copy-args args))
   (loop :for slot :in (c2mop:class-slots(class-of args))
 	:for name = (c2mop:slot-definition-name slot)
 	:for v = (getf params (intern (symbol-name name)

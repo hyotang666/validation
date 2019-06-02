@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "validation"
+  :version "0.0.1"
   :depends-on
   (
    "closer-mop" ; meta object protocols
