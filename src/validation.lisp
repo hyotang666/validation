@@ -9,7 +9,7 @@
     #:update-instance ; Like CL:MAKE-INSTANCE but destructively modify the first argument.
 
     ;; DSL for extension.
-    #:assert-form ; Generic-function which called to macroexpand WITH-OBJECT-VALIDATION.
+    #:defassert ; Macro to define new assertion.
     #:next-assertion ; Must called inside of ASSERT-FORM.
     #:*errors* ; To build error stack.
     ;; slot-accessors for second argument of ASSERT-FORM
@@ -105,7 +105,13 @@
 
 (defgeneric assert-form(key args))
 
-(defmethod assert-form((key (eql :require)) args)
+(defmacro defassert(key (args)&body body)
+  (check-type key symbol)
+  (let((k(gensym"KEY")))
+    `(defmethod assert-form ((,k (eql ',key)),args)
+       ,@body)))
+
+(defassert :require (args)
   (let((rest(next-assertion args))
        (required?(value args)))
     (when(or rest required?)
@@ -122,7 +128,7 @@
 				"is required")))
 		     *errors*))))))
 
-(defmethod assert-form((key (eql :type)) args)
+(defassert :type (args)
   `(IF (TYPEP ,(local-var args) ',(value args))
      ,(next-assertion args)
      (PUSH (CONS ',(slot-name args)
@@ -130,7 +136,7 @@
 				   `("is not type-of ~S" ',(value args)))))
 	    *ERRORS*)))
 
-(defmethod assert-form((key (eql :key))args)
+(defassert :key (args)
   (let((v(gensym"CANONICALIZED"))
        (c(gensym"CONDITION")))
     `(HANDLER-CASE(LET((,v (FUNCALL ,(value args) ,(local-var args))))
@@ -141,7 +147,7 @@
 	  `(ERROR ()(PUSH (CONS ',(slot-name args)(FORMAT NIL ,@(format-args args)))*ERRORS*))
 	  `(ERROR (,c)(PUSH(CONS ',(slot-name args)(PRINC-TO-STRING ,c))*ERRORS*))))))
 
-(defmethod assert-form((key (eql :assert))args)
+(defassert :assert (args)
   `(IF ,(value args)
        ,(next-assertion args)
        (PUSH (CONS ',(slot-name args)
