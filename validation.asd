@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "validation"
-  :version "1.0.1"
+  :version "1.0.2"
   :depends-on
   (
    "closer-mop" ; meta object protocols
@@ -18,7 +18,10 @@
            ((o test-op) (c (eql (find-system "validation"))))
   (append (call-next-method) '((test-op "validation.test"))))
 (defmethod operate :around
-           ((o test-op) (c (eql (find-system "validation"))) &rest keys)
+           ((o test-op) (c (eql (find-system "validation"))) &rest keys
+                        &key ((:compile-print *compile-print*))
+                        ((:compile-verbose *compile-verbose*))
+                        &allow-other-keys)
   (flet ((jingoh.args (keys)
            (loop :for (key value) :on keys :by #'cddr
                  :when (find key '(:on-fails :subject :vivid) :test #'eq)
