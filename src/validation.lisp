@@ -111,6 +111,8 @@
     `(defmethod assert-form ((,k (eql ',key)),args)
        ,@body)))
 
+(set-pprint-dispatch '(cons (member defassert)) (pprint-dispatch '(defun)))
+
 (defassert :require (args)
   (let((rest(next-assertion args))
        (required?(value args)))
