@@ -141,21 +141,23 @@
 #?(with-object-validation((make-instance 'super)) ; <--- not specified.
     ((number (:require t))
      (string (:require t))))
-:multiple-value-satisfies #`(& (typep $1 'super)
+:multiple-value-satisfies (lambda ($1 $2)
+                            (& (typep $1 'super)
 			       (not(slot-boundp $1 'number))
 			       (not(slot-boundp $1 'string))
 			       ;; Every slots are validated.
 			       (equal $2 '((number . "is required")
-					   (string . "is required"))))
+					   (string . "is required")))))
 
 #?(with-object-validation((make-instance 'super) :target-slots '(number)) ; <--- Specify only NUMBER.
     ((number (:require t))
      (string (:require t))))
-:multiple-value-satisfies #`(& (typep $1 'super)
+:multiple-value-satisfies (lambda ($1 $2)
+                            (& (typep $1 'super)
 			       (not(slot-boundp $1 'number))
 			       (not(slot-boundp $1 'string))
 			       ;; Only number slot is validated.
-			       (equal $2 '((number . "is required"))))
+			       (equal $2 '((number . "is required")))))
 
 ; test := List, otherwise error.
 #?(with-object-validation((make-instance 'super):test "not list")())

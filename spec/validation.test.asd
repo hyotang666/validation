@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :validation.test
+  :version "0.0.1"
   :depends-on
   (:jingoh "validation")
   :components
